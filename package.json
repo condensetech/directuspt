@@ -1,0 +1,35 @@
+{
+  "name": "directus-power-tools",
+  "version": "0.0.1",
+  "description": "Directus CLI Tools to help with snapshots and seeding operations",
+  "author": "Condense <info@condense.tech>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": "./bin/run",
+  "files": [
+    "/bin",
+    "/dist/**/*.js"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src",
+    "build": "esbuild ./src/*.ts --bundle --platform=node --target=node14 --outdir=dist/",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.11",
+    "esbuild": "^0.18.3",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.3",
+    "typescript": "<5.1.0"
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  }
+}

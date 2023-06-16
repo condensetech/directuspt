@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+// Since the CLI is a single process, we can have a larger amount of max listeners since
+// the process gets shut down. Don't set it to 0 (no limit) since we should still be aware
+// of rouge event listeners
+process.setMaxListeners(parseInt(process.env.DPT_MAX_LISTENERS, 10) || 1000);
+// Don't let other libraries override the CLI specified max listener count
+process.setMaxListeners = () => {};
+
+const cli = require('../dist/cli');
+cli.run();
