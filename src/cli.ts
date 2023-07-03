@@ -1,7 +1,8 @@
 import { program, Command, Option, InvalidArgumentError } from 'commander';
 import { printError } from './errors';
 import { Filter, FolderItem, RoleItem } from '@directus/sdk';
-import { snapshot } from './commands';
+import { snapshot } from './commands/snapshot';
+import { apply } from './commands/apply';
 
 function getPackageVersionSync() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -54,6 +55,10 @@ decorateCommandWithCommonOptions(program.command('snapshot').description('Snapsh
   )
   .addOption(new Option('-d, --dest <path>', 'Output directory').default('./snapshot'))
   .action(snapshot);
+
+decorateCommandWithCommonOptions(program.command('apply').description('Apply snapshots to a Directus instance'))
+  .addOption(new Option('-s, --src <path>', 'Source directory').default('./snapshot'))
+  .action(apply);
 
 export const run = async () => {
   try {

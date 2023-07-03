@@ -29,6 +29,8 @@ function errorToStringMessage(error: Error): string | undefined {
   } else if ('response' in error && error.response) {
     const response = error.response as AxiosResponse;
     return `Received ${response.status} ${response.statusText} from ${response.config.url}`;
+  } else if ('message' in error) {
+    return error.message;
   } else if ('code' in error) {
     const axiosError = error as AxiosError;
     if (axiosError.code === 'ECONNREFUSED') {
