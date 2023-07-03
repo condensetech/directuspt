@@ -1,12 +1,16 @@
 import fs from 'fs/promises';
-import { BaseCommandOptions, getClient } from './common';
-import { FoldersSnapshotOptions, snapshotFolders } from './folders';
-import { PermissionsSnapshotOptions, snapshotPermissions } from './permissions';
-import { snapshotSchema } from './schema';
-import { snapshotTranslations } from './translations';
-import { CommandSectionError } from '../errors';
+import { BaseCommandOptions, getClient } from '../common';
+import { FoldersSnapshotOptions, snapshotFolders } from '../folders';
+import { PermissionsSnapshotOptions, snapshotPermissions } from '../permissions';
+import { snapshotSchema } from '../schema';
+import { snapshotTranslations } from '../translations';
+import { CommandSectionError } from '../../errors';
 
-export type SnapshotCommandOptions = BaseCommandOptions & FoldersSnapshotOptions & PermissionsSnapshotOptions;
+export type SnapshotCommandOptions = BaseCommandOptions &
+  FoldersSnapshotOptions &
+  PermissionsSnapshotOptions & {
+    dest: string;
+  };
 
 async function tryMkdir(path: string) {
   try {
@@ -24,7 +28,7 @@ async function fetchSnapshot(name: string, fetchPromise: Promise<unknown>): Prom
     console.log(`  [${name}] OK`);
     return [data, name];
   } catch (e) {
-    throw new CommandSectionError(`[${name}] Snapshot operation failed`, e);
+    throw new CommandSectionError(`  [${name}] Snapshot operation failed`, e);
   }
 }
 

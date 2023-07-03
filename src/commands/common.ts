@@ -6,10 +6,11 @@ export interface BaseCommandOptions {
   password?: string;
   otp?: string;
   host: string;
-  dest: string;
 }
 
-export async function getClient(opts: BaseCommandOptions): Promise<Directus<TypeMap, Auth>> {
+export type DirectusClient = Directus<TypeMap, Auth>;
+
+export async function getClient(opts: BaseCommandOptions): Promise<DirectusClient> {
   const client = new Directus(opts.host);
   if (opts.token) {
     await client.auth.static(opts.token);

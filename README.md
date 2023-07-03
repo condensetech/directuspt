@@ -21,9 +21,16 @@ A static token can be provided via `-t, --token`, or via the environment variabl
 
 ### Snapshot
 
-It snapshots schema, translations, permissions, folders as json files in the given path.
+It snapshots schema, translations, permissions and folders as json files in the given `dest` path.
 Additional options are:
 
 - `-d, --dest` to set the destination path (`./snapshot` by default);
 - `--roles-filter` to set an additional filter when selecting roles to snapshot;
 - `--folders-filter` to set an additional filter when selecting folders to snapshot.
+
+### Apply
+
+It applies any schema, translations, permissions, and folders json snapshots found in the given `src` path.
+Additional options are:
+
+- `-s, --src` to set the source path (`./snapshot` by default);

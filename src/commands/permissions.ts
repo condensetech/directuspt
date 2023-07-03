@@ -1,12 +1,12 @@
 import { pickBy, identity } from 'lodash-es';
-import { Auth, Directus, Filter, TypeMap, RoleItem } from '@directus/sdk';
-import { BaseCommandOptions } from './common';
+import { Filter, RoleItem } from '@directus/sdk';
+import { BaseCommandOptions, DirectusClient } from './common';
 
 export interface PermissionsSnapshotOptions extends BaseCommandOptions {
   rolesFilter?: Filter<RoleItem>;
 }
 
-async function fetchRemoteRolePermissions(roleId, client: Directus<TypeMap, Auth>) {
+async function fetchRemoteRolePermissions(roleId, client: DirectusClient) {
   const response = await client.permissions.readByQuery({
     limit: -1,
     filter: { role: { _eq: roleId } },
@@ -28,7 +28,7 @@ async function fetchRemoteRolePermissions(roleId, client: Directus<TypeMap, Auth
   }, {});
 }
 
-export async function snapshotPermissions(client: Directus<TypeMap, Auth>, opts: PermissionsSnapshotOptions) {
+export async function snapshotPermissions(client: DirectusClient, opts: PermissionsSnapshotOptions) {
   const roles = await client.roles.readByQuery({
     limit: -1,
     sort: ['id'],

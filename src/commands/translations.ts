@@ -1,11 +1,11 @@
-import { Auth, Directus, TypeMap } from '@directus/sdk';
 import axios from 'axios';
 import { sortBy } from 'lodash-es';
+import { DirectusClient } from './common';
 
-export async function snapshotTranslations(client: Directus<TypeMap, Auth>) {
+export async function snapshotTranslations(client: DirectusClient) {
   const response = await axios.get(`${client.url}/translations`, {
     headers: {
-      Authorization: `Bearer 1${await client.auth.token}`,
+      Authorization: `Bearer ${await client.auth.token}`,
       'Content-Type': 'application/json',
     },
   });

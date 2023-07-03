@@ -1,12 +1,12 @@
-import { Auth, Directus, Filter, FolderItem, TypeMap } from '@directus/sdk';
+import { Filter, FolderItem } from '@directus/sdk';
 import { identity, pickBy } from 'lodash-es';
-import { BaseCommandOptions } from './common';
+import { BaseCommandOptions, DirectusClient } from './common';
 
 export interface FoldersSnapshotOptions extends BaseCommandOptions {
   rolesFilter?: Filter<FolderItem>;
 }
 
-export async function snapshotFolders(client: Directus<TypeMap, Auth>, opts: FoldersSnapshotOptions) {
+export async function snapshotFolders(client: DirectusClient, opts: FoldersSnapshotOptions) {
   const folders = await client.folders.readByQuery({
     limit: -1,
     sort: ['id'],
