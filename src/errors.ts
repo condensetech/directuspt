@@ -28,6 +28,7 @@ function errorToStringMessage(error: Error): string | undefined {
     }
   } else if ('response' in error && error.response) {
     const response = error.response as AxiosResponse;
+    // console.debug(response.data)
     return `Received ${response.status} ${response.statusText} from ${response.config.url}`;
   } else if ('message' in error) {
     return error.message;
