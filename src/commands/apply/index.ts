@@ -2,13 +2,14 @@ import fs from 'fs/promises';
 import { BaseCommandOptions, DirectusClient, getClient } from '../common';
 import { applySchemaSnapshot } from '../schema';
 import { CommandSectionError } from '../../errors';
+import { applyFoldersSnapshot } from '../folders';
 
 export type ApplyCommandOptions = BaseCommandOptions & {
   src: string;
 };
 
 interface ApplyPromise {
-  (client: DirectusClient, snapshot: unknown): Promise<unknown>;
+  (client: DirectusClient, snapshot): Promise<unknown>;
 }
 
 async function readSnapshot(name: string, folder: string): Promise<[unknown, string]> {
@@ -24,6 +25,9 @@ async function readSnapshot(name: string, folder: string): Promise<[unknown, str
 
 const applyPromisesRouter: Record<string, ApplyPromise> = {
   schema: applySchemaSnapshot,
+  // translations: applyTranslationsSnapshot,
+  // permissions: applyPermissionsSnapshot,
+  folders: applyFoldersSnapshot,
 };
 
 async function applySnapshot(name: string, client: DirectusClient, snapshot: unknown) {
@@ -40,13 +44,14 @@ export async function apply(opts: ApplyCommandOptions) {
   console.log('Reading snapshots...');
   const snapshots = await Promise.all([
     readSnapshot('schema', opts.src),
-    // readSnapshot('', opts.src),
+    // readSnapshot('translations', opts.src),
+    // readSnapshot('permissions', opts.src),
+    readSnapshot('folders', opts.src),
   ]);
   console.log('Applying snapshots...');
   await Promise.all(
     snapshots.map(async ([data, name]) => {
       await applySnapshot(name, client, data);
-      console.log(`  [${name}] OK`);
     }),
   );
   console.log('Done!');
