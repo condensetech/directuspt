@@ -3,14 +3,14 @@ import { identity, isEqual, pickBy } from 'lodash-es';
 import { BaseCommandOptions, DirectusClient } from './common';
 
 export interface FoldersSnapshotOptions extends BaseCommandOptions {
-  rolesFilter?: Filter<FolderItem>;
+  foldersFilter?: Filter<FolderItem>;
 }
 
 export async function snapshotFolders(client: DirectusClient, opts?: FoldersSnapshotOptions): Promise<FolderItem[]> {
   const folders = await client.folders.readByQuery({
     limit: -1,
     sort: ['id'],
-    filter: opts?.rolesFilter ?? {},
+    filter: opts?.foldersFilter ?? {},
   });
   if (!folders.data) {
     throw new Error('No response received while fetching folders!');

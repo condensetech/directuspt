@@ -3,6 +3,7 @@ import { BaseCommandOptions, DirectusClient, getClient } from '../common';
 import { applySchemaSnapshot } from '../schema';
 import { CommandSectionError } from '../../errors';
 import { applyFoldersSnapshot } from '../folders';
+import { applyPermissionsSnapshot } from '../permissions';
 
 export type ApplyCommandOptions = BaseCommandOptions & {
   src: string;
@@ -26,7 +27,7 @@ async function readSnapshot(name: string, folder: string): Promise<[unknown, str
 const applyPromisesRouter: Record<string, ApplyPromise> = {
   schema: applySchemaSnapshot,
   // translations: applyTranslationsSnapshot,
-  // permissions: applyPermissionsSnapshot,
+  permissions: applyPermissionsSnapshot,
   folders: applyFoldersSnapshot,
 };
 
@@ -45,7 +46,7 @@ export async function apply(opts: ApplyCommandOptions) {
   const snapshots = await Promise.all([
     readSnapshot('schema', opts.src),
     // readSnapshot('translations', opts.src),
-    // readSnapshot('permissions', opts.src),
+    readSnapshot('permissions', opts.src),
     readSnapshot('folders', opts.src),
   ]);
   console.log('Applying snapshots...');
