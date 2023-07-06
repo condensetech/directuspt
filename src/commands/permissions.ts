@@ -15,10 +15,8 @@ type RolePermissions = {
 };
 
 async function fetchRemoteRolePermissions(roleId, client: DirectusClient): Promise<RolePermissions> {
-  const response = await client.permissions.readByQuery({
-    limit: -1,
-    filter: { role: { _eq: roleId } },
-  });
+  const filter = roleId ? { role: { _eq: roleId } } : { role: { _null: true } };
+  const response = await client.permissions.readByQuery({ limit: -1, filter });
   if (!response.data) {
     throw new Error('No response received while fetching permissions!');
   }
@@ -40,17 +38,19 @@ export async function snapshotPermissions(
   client: DirectusClient,
   opts: PermissionsSnapshotOptions,
 ): Promise<CustomRoleItem[]> {
-  const roles = await client.roles.readByQuery({
+  const result = await client.roles.readByQuery({
     limit: -1,
     sort: ['id'],
     fields: ['id', 'name', 'icon', 'description', 'ip_access', 'enforce_tfa', 'admin_access', 'app_access'],
     filter: opts.rolesFilter ?? {},
   });
-  if (!roles.data) {
+  if (!result.data) {
     throw new Error('No response received while fetching roles!');
   }
+  // add a `null` role to handle public permissions, which have no roles:
+  const roles = [...result.data, { id: null } as unknown as RoleItem];
   return Promise.all(
-    roles.data.map(async (role: RoleItem) => {
+    roles.map(async (role: RoleItem) => {
       const permits = await fetchRemoteRolePermissions(role.id, client);
       return {
         ...pickBy<RoleItem>(role, identity),
@@ -63,13 +63,13 @@ export async function snapshotPermissions(
 export async function applyPermissionsSnapshot(client: DirectusClient, snapshot: CustomRoleItem[]) {
   const { data: existingRoles } = await client.roles.readByQuery({ limit: -1 });
   for (const snapshotRole of snapshot) {
-    const existingRole = await upsertRole(snapshotRole, existingRoles!, client);
-    const existingPermits = await fetchRemoteRolePermissions(existingRole.id, client);
+    const existingRole = snapshotRole.id ? await upsertRole(snapshotRole, existingRoles!, client) : null;
+    const existingPermits = await fetchRemoteRolePermissions(existingRole?.id, client);
     const allCollections = uniq(Object.keys(existingPermits).concat(Object.keys(snapshotRole.permits)));
     for (const collection of allCollections) {
       const snapshotActions = snapshotRole.permits[collection] || {};
       const existingActions = existingPermits[collection] || {};
-      await syncActions({ role: existingRole.id, collection }, existingActions, snapshotActions, client);
+      await syncActions({ role: existingRole?.id, collection }, existingActions, snapshotActions, client);
     }
   }
 }
