@@ -86,8 +86,8 @@ async function upsertRole(
     await updateRoleIfNeeded(existingRole, snapshotRole, client);
     return existingRole;
   }
+  console.log(`  [permissions] Creating role "${newRole!.id}"`);
   const newRole = await client.roles.createOne(omit(snapshotRole, 'permits'));
-  console.log(`  [permissions] Created role "${newRole!.id}"`);
   return newRole!;
 }
 
@@ -131,18 +131,18 @@ async function syncActions({ role, collection }, existingActions = {}, snapshotA
 
 async function syncAction({ role, collection, action }, existing, snapshot, client: DirectusClient) {
   if (!existing) {
+    console.log('  [permissions] Creating permission', role, collection, action);
     await client.permissions.createOne({ role, collection, action, ...snapshot });
-    console.log('  [permissions] Created permission', role, collection, action);
   } else if (!snapshot) {
+    console.log('  [permissions] Deleting permission', role, collection, action);
     await client.permissions.deleteOne(existing.id);
-    console.log('  [permissions] Deleted permission', role, collection, action);
   } else {
     const attributes = diffObjects(existing, snapshot);
     if (Object.keys(attributes).length === 0) {
-      console.log('  [permissions] Skipping permission update', role, collection, action);
+      console.debug('  [permissions] Skipping permission update', role, collection, action);
       return;
     }
+    console.log('  [permissions] Updating permission %s %s %s with %j', role, collection, action, attributes);
     await client.permissions.updateOne(existing.id, attributes);
-    console.log('  [permissions] Updated permission %s %s %s with %j', role, collection, action, attributes);
   }
 }
