@@ -28,8 +28,8 @@ function errorToStringMessage(error: Error): string | undefined {
     }
   } else if ('response' in error && error.response) {
     const response = error.response as AxiosResponse;
-    // console.debug(response.data)
-    return `Received ${response.status} ${response.statusText} from ${response.config.url}`;
+    const responseDetail = typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
+    return `Received ${response.status} ${response.statusText} from ${response.config.url}:\n${responseDetail}`;
   } else if ('message' in error) {
     return error.message;
   } else if ('code' in error) {

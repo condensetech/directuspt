@@ -16,7 +16,6 @@ export async function snapshotTranslations(client: DirectusClient): Promise<Cust
 
 export async function applyTranslationsSnapshot(client: DirectusClient, snapshot: CustomTranslationItem[]) {
   const existingItems = sortBy(await fetchTranslations(client), translationTuple);
-
   for (const snapshotItem of snapshot) {
     const snapshotTuple = translationTuple(snapshotItem);
     const matchedItem = existingItems.find((existingItem) => translationTuple(existingItem) === snapshotTuple);
@@ -28,7 +27,7 @@ export async function applyTranslationsSnapshot(client: DirectusClient, snapshot
         console.log('  [translations] Updating translation "%s"', snapshotTuple);
         await updateTranslation(client, matchedItem.id, snapshotItem.value);
       } else {
-        console.log('  [translations] Skipping translation "%s"', snapshotTuple);
+        console.debug('  [translations] Skipping translation "%s"', snapshotTuple);
       }
     } else {
       console.log('  [translations] Creating translation "%s"', snapshotTuple);
@@ -40,7 +39,7 @@ export async function applyTranslationsSnapshot(client: DirectusClient, snapshot
 async function fetchTranslations(client: DirectusClient): Promise<TranslationItem[]> {
   const {
     data: { data },
-  } = await axios.get<{ data: TranslationItem[] }>(`${client.url}/translations`, {
+  } = await axios.get<{ data: TranslationItem[] }>(`${client.url}/translations?limit=-1`, {
     headers: {
       Authorization: `Bearer ${await client.auth.token}`,
       'Content-Type': 'application/json',
@@ -72,5 +71,5 @@ async function updateTranslation(client: DirectusClient, id: string, value: stri
 }
 
 function translationTuple(t: TranslationItem | CustomTranslationItem): string {
-  return `${t.key}/${t.language}`;
+  return `${t.key}/${t.language}`.toLowerCase();
 }
