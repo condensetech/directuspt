@@ -4,6 +4,8 @@ import { Filter, FolderItem, RoleItem } from '@directus/sdk';
 import { snapshot } from './commands/snapshot';
 import { apply } from './commands/apply';
 
+const SNAPSHOT_NAMES = ['schema', 'translations', 'permissions', 'folders'];
+
 function getPackageVersionSync() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { version } = require('../package.json');
@@ -58,6 +60,11 @@ decorateCommandWithCommonOptions(program.command('snapshot').description('Snapsh
 
 decorateCommandWithCommonOptions(program.command('apply').description('Apply snapshots to a Directus instance'))
   .addOption(new Option('-s, --src <path>', 'Source directory').default('./snapshot'))
+  .addOption(
+    new Option('-S, --snapshots [name...]', 'Choose which snapshots to apply')
+      .choices(SNAPSHOT_NAMES)
+      .default(SNAPSHOT_NAMES),
+  )
   .action(apply);
 
 export const run = async () => {

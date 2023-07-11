@@ -26,7 +26,7 @@ Additional options are:
 
 - `-d, --dest` to set the destination path (`./snapshot` by default);
 - `--roles-filter` to set an additional filter when selecting roles to snapshot;
-- `--folders-filter` to set an additional filter when selecting folders to snapshot.
+- `--folders-filter` to set an additional filter when selecting folders to snapshot;
 
 ### Apply
 
@@ -34,3 +34,4 @@ It applies any schema, translations, permissions, and folders json snapshots fou
 Additional options are:
 
 - `-s, --src` to set the source path (`./snapshot` by default);
+- `-S, --snapshots` to pick and choose which snapshots to apply (default to `["schema", "translations", "permissions", "folders"]`);

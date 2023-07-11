@@ -5,9 +5,11 @@ import { CommandSectionError } from '../../errors';
 import { applyFoldersSnapshot } from '../folders';
 import { applyPermissionsSnapshot } from '../permissions';
 import { applyTranslationsSnapshot } from '../translations';
+import { uniq } from 'lodash-es';
 
 export type ApplyCommandOptions = BaseCommandOptions & {
   src: string;
+  snapshots: string[];
 };
 
 interface ApplyPromise {
@@ -44,12 +46,8 @@ async function applySnapshot(name: string, client: DirectusClient, snapshot: unk
 export async function apply(opts: ApplyCommandOptions) {
   const client = await getClient(opts);
   console.log('Reading snapshots...');
-  const snapshots = await Promise.all([
-    readSnapshot('schema', opts.src),
-    readSnapshot('translations', opts.src),
-    readSnapshot('permissions', opts.src),
-    readSnapshot('folders', opts.src),
-  ]);
+  const readPromises = uniq(opts.snapshots).map((name) => readSnapshot(name, opts.src));
+  const snapshots = await Promise.all(readPromises);
   console.log('Applying snapshots...');
   await Promise.all(
     snapshots.map(async ([data, name]) => {
