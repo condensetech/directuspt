@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { BaseCommandOptions, DirectusClient, getClient } from '../common';
+import { BaseCommandOptions, DirectusClient, ResourceType, getClient, getRequestedResourceTypes } from '../common';
 import { applySchemaSnapshot } from '../schema';
 import { CommandSectionError } from '../../errors';
 import { applyFoldersSnapshot } from '../folders';
@@ -10,50 +10,44 @@ export type ApplyCommandOptions = BaseCommandOptions & {
   src: string;
 };
 
-interface ApplyPromise {
-  (client: DirectusClient, snapshot): Promise<unknown>;
-}
+type ApplyHandler = (client: DirectusClient, snapshot: any) => Promise<unknown>;
 
-async function readSnapshot(name: string, folder: string): Promise<[unknown, string]> {
+async function readSnapshot(type: ResourceType, opts: ApplyCommandOptions): Promise<[ResourceType, unknown]> {
   try {
-    const data = await fs.readFile(`${folder}/${name}.json`, 'utf8');
+    const data = await fs.readFile(`${opts.src}/${type}.json`, 'utf8');
     const json = JSON.parse(data);
-    console.log(`  [${name}] OK`);
-    return [json, name];
+    console.log(`  [${type}] OK`);
+    return [type, json];
   } catch (e) {
-    throw new CommandSectionError(`  [${name}] Apply operation failed`, e);
+    throw new CommandSectionError(`  [${type}] Apply operation failed`, e);
   }
 }
 
-const applyPromisesRouter: Record<string, ApplyPromise> = {
-  schema: applySchemaSnapshot,
-  translations: applyTranslationsSnapshot,
-  permissions: applyPermissionsSnapshot,
-  folders: applyFoldersSnapshot,
+const applySnapshotRouter: Record<ResourceType, ApplyHandler> = {
+  [ResourceType.SCHEMA]: applySchemaSnapshot,
+  [ResourceType.TRANSLATIONS]: applyTranslationsSnapshot,
+  [ResourceType.PERMISSIONS]: applyPermissionsSnapshot,
+  [ResourceType.FOLDERS]: applyFoldersSnapshot,
 };
 
-async function applySnapshot(name: string, client: DirectusClient, snapshot: unknown) {
+async function applySnapshot(type: ResourceType, snapshot: unknown, client: DirectusClient) {
   try {
-    await applyPromisesRouter[name](client, snapshot);
-    console.log(`  [${name}] OK`);
+    await applySnapshotRouter[type](client, snapshot);
+    console.log(`  [${type}] OK`);
   } catch (e) {
-    throw new CommandSectionError(`  [${name}] Apply operation failed`, e);
+    throw new CommandSectionError(`  [${type}] Apply operation failed`, e);
   }
 }
 
 export async function apply(opts: ApplyCommandOptions) {
+  const resources = getRequestedResourceTypes(opts);
   const client = await getClient(opts);
   console.log('Reading snapshots...');
-  const snapshots = await Promise.all([
-    readSnapshot('schema', opts.src),
-    readSnapshot('translations', opts.src),
-    readSnapshot('permissions', opts.src),
-    readSnapshot('folders', opts.src),
-  ]);
+  const snapshots = await Promise.all(resources.map((type) => readSnapshot(type, opts)));
   console.log('Applying snapshots...');
   await Promise.all(
-    snapshots.map(async ([data, name]) => {
-      await applySnapshot(name, client, data);
+    snapshots.map(async (args) => {
+      await applySnapshot(...args, client);
     }),
   );
   console.log('Done!');

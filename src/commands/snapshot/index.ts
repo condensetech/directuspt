@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { BaseCommandOptions, getClient } from '../common';
+import { BaseCommandOptions, DirectusClient, ResourceType, getClient, getRequestedResourceTypes } from '../common';
 import { FoldersSnapshotOptions, snapshotFolders } from '../folders';
 import { PermissionsSnapshotOptions, snapshotPermissions } from '../permissions';
 import { snapshotSchema } from '../schema';
@@ -12,6 +12,8 @@ export type SnapshotCommandOptions = BaseCommandOptions &
     dest: string;
   };
 
+type SnapshotHandler = (client: DirectusClient, opts: SnapshotCommandOptions) => Promise<unknown>;
+
 async function tryMkdir(path: string) {
   try {
     await fs.mkdir(path, { recursive: true });
@@ -22,32 +24,39 @@ async function tryMkdir(path: string) {
   }
 }
 
-async function fetchSnapshot(name: string, fetchPromise: Promise<unknown>): Promise<[unknown, string]> {
+const fetchSnapshotRouter: Record<ResourceType, SnapshotHandler> = {
+  [ResourceType.SCHEMA]: snapshotSchema,
+  [ResourceType.TRANSLATIONS]: snapshotTranslations,
+  [ResourceType.PERMISSIONS]: snapshotPermissions,
+  [ResourceType.FOLDERS]: snapshotFolders,
+};
+
+async function fetchSnapshot(
+  type: ResourceType,
+  client: DirectusClient,
+  opts: SnapshotCommandOptions,
+): Promise<[ResourceType, unknown]> {
   try {
-    const data = await fetchPromise;
-    console.log(`  [${name}] OK`);
-    return [data, name];
+    const data = await fetchSnapshotRouter[type](client, opts);
+    console.log(`  [${type}] OK`);
+    return [type, data];
   } catch (e) {
     throw new CommandSectionError(`  [${name}] Snapshot operation failed`, e);
   }
 }
 
+async function writeSnapshot(type: ResourceType, data: unknown, opts: SnapshotCommandOptions) {
+  await fs.writeFile(`${opts.dest}/${type}.json`, JSON.stringify(data, null, 2));
+  console.log(`  [${type}] OK`);
+}
+
 export async function snapshot(opts: SnapshotCommandOptions) {
+  const resources = getRequestedResourceTypes(opts);
   const client = await getClient(opts);
   await tryMkdir(opts.dest);
   console.log('Generating snapshots...');
-  const snapshots = await Promise.all([
-    fetchSnapshot('schema', snapshotSchema(client)),
-    fetchSnapshot('translations', snapshotTranslations(client)),
-    fetchSnapshot('permissions', snapshotPermissions(client, opts)),
-    fetchSnapshot('folders', snapshotFolders(client, opts)),
-  ]);
+  const snapshots = await Promise.all(resources.map((type) => fetchSnapshot(type, client, opts)));
   console.log('Writing snapshots...');
-  await Promise.all(
-    snapshots.map(async ([data, name]) => {
-      await fs.writeFile(`${opts.dest}/${name}.json`, JSON.stringify(data, null, 2));
-      console.log(`  [${name}] OK`);
-    }),
-  );
+  await Promise.all(snapshots.map((args) => writeSnapshot(...args, opts)));
   console.log('Done!');
 }

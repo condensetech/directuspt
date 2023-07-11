@@ -3,6 +3,7 @@ import { printError } from './errors';
 import { Filter, FolderItem, RoleItem } from '@directus/sdk';
 import { snapshot } from './commands/snapshot';
 import { apply } from './commands/apply';
+import { ResourceType } from './commands/common';
 
 function getPackageVersionSync() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -24,12 +25,26 @@ function parseFilter<T>(value): Filter<T> {
   return parsed as Filter<T>;
 }
 
+function parseResourceTypes(value: string): ResourceType[] {
+  return value.split(',').map((v) => {
+    const value = v.trim().toLowerCase() as ResourceType;
+    if (!Object.values(ResourceType).includes(value as ResourceType)) {
+      throw new InvalidArgumentError(`Allowed values are: ${Object.values(ResourceType).join(', ')}`);
+    }
+    return value;
+  });
+}
+
 function decorateCommandWithCommonOptions(command: Command): Command {
   return command
     .addOption(
       new Option('-t, --token <token>', 'Directus API token')
         .conflicts(['email', 'password', 'otp'])
         .env('DIRECTUS_TOKEN'),
+    )
+    .addOption(new Option('--except <resources>', 'Resources to exclude').argParser(parseResourceTypes))
+    .addOption(
+      new Option('--only <resources>', 'Resources to include').argParser(parseResourceTypes).conflicts(['except']),
     )
     .addOption(new Option('-e, --email <email>', 'Directus user email').env('DIRECTUS_USER_EMAIL'))
     .addOption(new Option('-p, --password <password>', 'Directus user password').env('DIRECTUS_USER_PASSWORD'))
