@@ -53,7 +53,7 @@ function decorateCommandWithCommonOptions(command: Command): Command {
 }
 
 program
-  .name('directus-power-tools')
+  .name('directuspt')
   .description('Directus CLI Tool to help with snapshotting, seeding, and more.')
   .version(getPackageVersionSync());
 

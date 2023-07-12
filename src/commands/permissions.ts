@@ -20,7 +20,7 @@ async function fetchRemoteRolePermissions(roleId, client: DirectusClient): Promi
   if (!response.data) {
     throw new Error('No response received while fetching permissions!');
   }
-  return response.data.reduce((acc, { role, collection, action, ...rest }) => {
+  return response.data.reduce((acc, { id, role, collection, action, ...rest }) => {
     const serialized: CustomPermissionItem = pickBy(rest, identity);
     if (Object.keys(serialized).length > 0 && collection && action) {
       if (!acc[collection]) {
@@ -28,7 +28,7 @@ async function fetchRemoteRolePermissions(roleId, client: DirectusClient): Promi
       }
       acc[collection][action] = serialized;
     } else if (!collection || !action) {
-      console.log(`  [permissions] Skipping permission "${rest.id}" with missing collection or action`);
+      console.log(`  [permissions] Skipping permission "${rest.id}" because of missing collection or action`);
     }
     return acc;
   }, {});

@@ -1,11 +1,11 @@
 # Directus Power Tools
 
-To install: `npm i -g directus-power-tools`
+To install: `npm i -g directuspt`
 
 ## Commands
 
-- help: `directus-power-tools --help`
-- snapshot: `directus-power-tools snapshot`
+- help: `directuspt --help`
+- snapshot: `directuspt snapshot`
 
 ### Common options
 

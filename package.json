@@ -1,5 +1,5 @@
 {
-  "name": "directus-power-tools",
+  "name": "directuspt",
   "version": "0.0.1",
   "description": "Directus CLI Tools to help with snapshots and seeding operations",
   "author": "Condense <info@condense.tech>",
