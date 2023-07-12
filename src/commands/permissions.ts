@@ -20,8 +20,11 @@ async function fetchRemoteRolePermissions(roleId, client: DirectusClient): Promi
   if (!response.data) {
     throw new Error('No response received while fetching permissions!');
   }
-  return response.data.reduce((acc, { id, role, collection, action, ...rest }) => {
+  return response.data.reduce((acc, { id, role, collection, action, fields, ...rest }) => {
     const serialized: CustomPermissionItem = pickBy(rest, identity);
+    if (fields) {
+      serialized.fields = fields.sort();
+    }
     if (Object.keys(serialized).length > 0 && collection && action) {
       if (!acc[collection]) {
         acc[collection] = {};
