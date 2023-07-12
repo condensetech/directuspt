@@ -46,5 +46,10 @@ directuspt apply --only permissions,translations
 - User credentials can be provided via `-e, --email`, `-p, --password`, `-o, --otp`, or via the environment variables `DIRECTUS_USER_EMAIL`, `DIRECTUS_USER_PASSWORD`, `DIRECTUS_USER_OTP`. The latter should be preferred to avoid exposing the password.
 - A user token can be provided via `-t, --token`, or via the environment variable `DIRECTUS_TOKEN`. The latter should be preferred to avoid exposing the token.
 
+## TODO
 
-
+Next steps:
+- add flows and presets to the snapshots
+- improve logging
+- load config from file
+- seed command
