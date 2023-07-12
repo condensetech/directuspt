@@ -1,6 +1,6 @@
 {
   "name": "directuspt",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Directus CLI Tools to help with snapshots and seeding operations",
   "author": "Condense <info@condense.tech>",
   "license": "MIT",
