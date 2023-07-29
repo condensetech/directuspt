@@ -40,6 +40,8 @@ Example:
 directuspt apply --only permissions,translations
 ```
 
+
+
 ### Common options
 
 - Directus host can be set via `-H, --host` option or via the env variable `DIRECTUS_HOST`. By default `http://localhost:8055` is used.
