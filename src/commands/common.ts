@@ -34,7 +34,7 @@ export async function getClient(opts: BaseCommandOptions): Promise<DirectusClien
   const client = new Directus(opts.host);
   if (opts.token) {
     await client.auth.static(opts.token);
-  } else if (opts.email && opts.password && opts.otp) {
+  } else if (opts.email && opts.password) {
     await client.auth.login({
       email: opts.email,
       password: opts.password,
