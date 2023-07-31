@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { sortBy } from 'lodash-es';
 import { DirectusClient } from './common';
+import { createTranslations, readTranslations, updateTranslations } from '@directus/sdk';
 
 type CustomTranslationItem = Omit<TranslationItem, 'id'>;
 type TranslationItem = {
@@ -37,37 +37,21 @@ export async function applyTranslationsSnapshot(client: DirectusClient, snapshot
 }
 
 async function fetchTranslations(client: DirectusClient): Promise<TranslationItem[]> {
-  const {
-    data: { data },
-  } = await axios.get<{ data: TranslationItem[] }>(`${client.url}/translations?limit=-1`, {
-    headers: {
-      Authorization: `Bearer ${await client.auth.token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return data;
+  const items = await client.request(
+    readTranslations({
+      limit: -1,
+    }),
+  );
+  return items as TranslationItem[];
 }
 
 async function createTranslation(client: DirectusClient, item: CustomTranslationItem) {
-  await axios.post(`${client.url}/translations`, item, {
-    headers: {
-      Authorization: `Bearer ${await client.auth.token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  await client.request(createTranslations([item]));
 }
 
 async function updateTranslation(client: DirectusClient, id: string, value: string) {
-  await axios.patch(
-    `${client.url}/translations/${id}`,
-    { value },
-    {
-      headers: {
-        Authorization: `Bearer ${await client.auth.token}`,
-        'Content-Type': 'application/json',
-      },
-    },
-  );
+  // FIXME: forcing the type to be `TranslationItem` because the SDK typings are wrong
+  await client.request(updateTranslations([id as unknown as number], { value }));
 }
 
 function translationTuple(t: TranslationItem | CustomTranslationItem): string {

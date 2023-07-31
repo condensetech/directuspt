@@ -1,21 +1,30 @@
-import { Filter, FolderItem } from '@directus/sdk';
+import { Filter } from '@directus/types';
 import { identity, isEqual, pickBy } from 'lodash-es';
 import { BaseCommandOptions, DirectusClient } from './common';
+import { createFolders, readFolders, updateFolder } from '@directus/sdk';
 
 export interface FoldersSnapshotOptions extends BaseCommandOptions {
-  foldersFilter?: Filter<FolderItem>;
+  foldersFilter?: Filter;
+}
+
+interface FolderItem {
+  id: string;
+  name: string;
+  parent: string;
 }
 
 export async function snapshotFolders(client: DirectusClient, opts?: FoldersSnapshotOptions): Promise<FolderItem[]> {
-  const folders = await client.folders.readByQuery({
-    limit: -1,
-    sort: ['id'],
-    filter: opts?.foldersFilter ?? {},
-  });
-  if (!folders.data) {
+  const folders = await client.request(
+    readFolders({
+      limit: -1,
+      sort: ['id'],
+      filter: opts?.foldersFilter ?? {},
+    }),
+  );
+  if (folders.length === 0) {
     throw new Error('No response received while fetching folders!');
   }
-  return folders.data.map((folder: FolderItem) => pickBy(folder, identity)) as FolderItem[];
+  return folders.map((folder) => pickBy(folder, identity)) as FolderItem[];
 }
 
 export async function applyFoldersSnapshot(client: DirectusClient, snapshot: FolderItem[]) {
@@ -64,13 +73,13 @@ async function syncItems(client: DirectusClient, items: FolderItem[], existing: 
 async function updateItems(client: DirectusClient, items: FolderItem[]): Promise<string[]> {
   return Promise.all(
     items.map(async ({ id, ...item }) => {
-      const updated = await client.folders.updateOne(id, item);
+      const updated = await client.request(updateFolder(id, item));
       return updated!.id;
     }),
   );
 }
 
 async function createItems(client: DirectusClient, items: FolderItem[]): Promise<string[]> {
-  const { data } = await client.folders.createMany(items);
-  return data!.map((i) => i.id);
+  const data = await client.request(createFolders(items));
+  return data.map((i) => i.id);
 }

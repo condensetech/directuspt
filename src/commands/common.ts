@@ -1,4 +1,4 @@
-import { Auth, Directus, TypeMap } from '@directus/sdk';
+import { authentication, createDirectus, rest, DirectusClient as BaseDirectusClient, RestClient } from '@directus/sdk';
 
 export enum ResourceType {
   SCHEMA = 'schema',
@@ -28,16 +28,15 @@ export function getRequestedResourceTypes(opts: BaseCommandOptions): ResourceTyp
   return resourceTypeList;
 }
 
-export type DirectusClient = Directus<TypeMap, Auth>;
+export type DirectusClient = BaseDirectusClient<any> & RestClient<any>;
 
 export async function getClient(opts: BaseCommandOptions): Promise<DirectusClient> {
-  const client = new Directus(opts.host);
+  const client = createDirectus(opts.host).with(authentication()).with(rest());
   if (opts.token) {
-    await client.auth.static(opts.token);
+    await client.setToken(opts.token);
   } else if (opts.email && opts.password) {
-    await client.auth.login({
-      email: opts.email,
-      password: opts.password,
+    await client.login(opts.email, opts.password, {
+      mode: 'json',
       otp: opts.otp,
     });
   }

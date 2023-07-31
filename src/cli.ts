@@ -1,9 +1,9 @@
 import { program, Command, Option, InvalidArgumentError } from 'commander';
 import { printError } from './errors';
-import { Filter, FolderItem, RoleItem } from '@directus/sdk';
 import { snapshot } from './commands/snapshot';
 import { apply } from './commands/apply';
 import { ResourceType } from './commands/common';
+import { Filter } from '@directus/types';
 
 function getPackageVersionSync() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,7 +11,7 @@ function getPackageVersionSync() {
   return version;
 }
 
-function parseFilter<T>(value): Filter<T> {
+function parseFilter(value): Filter {
   let parsed;
   try {
     parsed = JSON.parse(value);
@@ -22,7 +22,7 @@ function parseFilter<T>(value): Filter<T> {
   if (typeof parsed !== 'object') {
     throw new InvalidArgumentError('Argument should be an object or an array');
   }
-  return parsed as Filter<T>;
+  return parsed as Filter;
 }
 
 function parseResourceTypes(value: string): ResourceType[] {
@@ -61,12 +61,12 @@ decorateCommandWithCommonOptions(program.command('snapshot').description('Snapsh
   .option(
     '--roles-filter <filter>',
     'Additional filter expressed in directus JSON format to apply on permission roles',
-    parseFilter<RoleItem>,
+    parseFilter,
   )
   .option(
     '--folders-filter <filter>',
     'Additional filter expressed in directus JSON format to apply on folders',
-    parseFilter<FolderItem>,
+    parseFilter,
   )
   .addOption(new Option('-d, --dest <path>', 'Output directory').default('./snapshot'))
   .action(snapshot);
