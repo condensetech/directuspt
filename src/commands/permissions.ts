@@ -35,10 +35,8 @@ async function fetchRemoteRolePermissions(
   opts?: FetchRemoteRolePermissionsOpts,
 ): Promise<RolePermissions> {
   const filter = roleId ? { role: { _eq: roleId } } : { role: { _null: true } };
-  const permissions = await client.request(readPermissions({ limit: -1, filter }));
-  if (permissions.length === 0) {
-    throw new Error('No response received while fetching permissions!');
-  }
+  // permissions API always return all records regardless of limit and page
+  const permissions = await client.request(readPermissions({ filter }));
   return permissions.reduce((acc, { id, collection, action, fields, ...rest }) => {
     const serialized = {
       ...pickBy(rest, (v) => v !== undefined),
@@ -61,17 +59,7 @@ export async function snapshotPermissions(
   client: DirectusClient,
   opts: PermissionsSnapshotOptions,
 ): Promise<ExistingRoleItem[]> {
-  const roles = await client.request(
-    readRoles({
-      limit: -1,
-      sort: ['id'],
-      fields: ['id', 'name', 'icon', 'description', 'ip_access', 'enforce_tfa', 'admin_access', 'app_access'],
-      filter: opts.rolesFilter ?? {},
-    }),
-  );
-  if (roles.length === 0) {
-    throw new Error('No response received while fetching roles!');
-  }
+  const roles = await collectExistingRoles(client, opts.rolesFilter);
   return Promise.all(
     // add a `null` role to handle public permissions, which have no roles:
     [...roles, { id: null }].map(async (role) => {
@@ -84,8 +72,26 @@ export async function snapshotPermissions(
   );
 }
 
+async function collectExistingRoles(client: DirectusClient, filter?: Filter): Promise<ExistingRoleItem[]> {
+  const pages: Array<ExistingRoleItem[]> = [];
+  const limit = 100;
+  while (pages.length === 0 || pages[pages.length - 1].length === limit) {
+    const items = await client.request(
+      readRoles({
+        limit,
+        page: pages.length + 1,
+        sort: ['id'],
+        fields: ['id', 'name', 'icon', 'description', 'ip_access', 'enforce_tfa', 'admin_access', 'app_access'],
+        filter,
+      }),
+    );
+    pages.push(items as ExistingRoleItem[]);
+  }
+  return pages.flat();
+}
+
 export async function applyPermissionsSnapshot(client: DirectusClient, snapshot: RoleItem[]) {
-  const existingRoles = (await client.request(readRoles({ limit: -1 }))) as ExistingRoleItem[];
+  const existingRoles = await collectExistingRoles(client);
   for (const snapshotRole of snapshot) {
     const existingRole = snapshotRole.id
       ? await upsertRole(snapshotRole as ExistingRoleItem, existingRoles, client)

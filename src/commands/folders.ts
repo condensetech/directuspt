@@ -13,17 +13,24 @@ interface FolderItem {
   parent: string;
 }
 
-export async function snapshotFolders(client: DirectusClient, opts?: FoldersSnapshotOptions): Promise<FolderItem[]> {
-  const folders = await client.request(
-    readFolders({
-      limit: -1,
-      sort: ['id'],
-      filter: opts?.foldersFilter ?? {},
-    }),
-  );
-  if (folders.length === 0) {
-    throw new Error('No response received while fetching folders!');
+async function collectExistingFolders(client: DirectusClient, filter?: Filter): Promise<FolderItem[]> {
+  const pages: Array<FolderItem[]> = [];
+  const limit = 100;
+  while (pages.length === 0 || pages[pages.length - 1].length === limit) {
+    const items = await client.request(
+      readFolders({
+        limit,
+        page: pages.length + 1,
+        filter,
+      }),
+    );
+    pages.push(items as FolderItem[]);
   }
+  return pages.flat();
+}
+
+export async function snapshotFolders(client: DirectusClient, opts?: FoldersSnapshotOptions): Promise<FolderItem[]> {
+  const folders = await collectExistingFolders(client, opts?.foldersFilter);
   return folders.map((folder) => pickBy(folder, identity)) as FolderItem[];
 }
 

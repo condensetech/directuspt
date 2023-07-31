@@ -37,12 +37,18 @@ export async function applyTranslationsSnapshot(client: DirectusClient, snapshot
 }
 
 async function fetchTranslations(client: DirectusClient): Promise<TranslationItem[]> {
-  const items = await client.request(
-    readTranslations({
-      limit: -1,
-    }),
-  );
-  return items as TranslationItem[];
+  const pages: Array<TranslationItem[]> = [];
+  const limit = 100;
+  while (pages.length === 0 || pages[pages.length - 1].length === limit) {
+    const items = await client.request(
+      readTranslations({
+        limit,
+        page: pages.length + 1,
+      }),
+    );
+    pages.push(items as TranslationItem[]);
+  }
+  return pages.flat();
 }
 
 async function createTranslation(client: DirectusClient, item: CustomTranslationItem) {
