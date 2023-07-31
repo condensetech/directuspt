@@ -1,5 +1,5 @@
-import { pickBy, identity, uniq, isEqual, omit } from 'lodash-es';
 import { Filter, PermissionItem, RoleItem } from '@directus/sdk';
+import { isEqual, omit, pickBy, uniq } from 'lodash-es';
 import { BaseCommandOptions, DirectusClient } from './common';
 
 export interface PermissionsSnapshotOptions extends BaseCommandOptions {
@@ -30,7 +30,7 @@ async function fetchRemoteRolePermissions(
   }
   return response.data.reduce((acc, { id, collection, action, fields, ...rest }) => {
     const serialized: CustomPermissionItem = {
-      ...pickBy(rest, identity),
+      ...pickBy(rest, (v) => v !== undefined),
       fields: fields?.sort(),
       id: opts?.includeId ? id : undefined,
     };
@@ -65,7 +65,7 @@ export async function snapshotPermissions(
     roles.map(async (role: RoleItem) => {
       const permits = await fetchRemoteRolePermissions(role.id, client);
       return {
-        ...pickBy<RoleItem>(role, identity),
+        ...pickBy(role, (v) => v !== undefined),
         permits,
       };
     }),
