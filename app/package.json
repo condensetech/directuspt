@@ -1,0 +1,36 @@
+{
+  "name": "directuspt",
+  "version": "0.0.4",
+  "description": "Directus CLI Tools to help with snapshots and seeding operations",
+  "author": "Condense <info@condense.tech>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": "./bin/run",
+  "files": [
+    "/bin",
+    "/dist/**/*.js"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "start": "npm run build && bin/run",
+    "clean": "rimraf dist",
+    "build": "npm run clean && esbuild ./src/index.ts ./src/cli.ts --bundle --platform=node --target=node14 --outdir=dist/"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.7",
+    "@types/node": "^20.3.1",
+    "esbuild": "^0.18.3",
+    "prettier": "2.8.8",
+    "rimraf": "^5.0.1",
+    "typescript": "<5.1.0"
+  },
+  "dependencies": {
+    "@directus/sdk": "^10.3.3",
+    "@directus/types": "^10.1.1",
+    "axios": "^1.4.0",
+    "commander": "^11.0.0",
+    "lodash-es": "^4.17.21"
+  }
+}
