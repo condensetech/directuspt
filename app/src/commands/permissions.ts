@@ -124,7 +124,7 @@ function diffObjects(former, latest) {
     if (
       (!formerKeys.includes(key) && latestKeys.includes(key)) ||
       (latestKeys.includes(key) &&
-        ((Array.isArray(latest[key]) && !isEqual(former[key].sort(), latest[key].sort())) ||
+        ((Array.isArray(latest[key]) && !isEqual(former[key]?.sort(), latest[key]?.sort())) ||
           !isEqual(former[key], latest[key])))
     ) {
       acc[key] = latest[key];
