@@ -63,13 +63,19 @@ export const addSnapshotCommand = (program: Command) => {
       parseFilter<FolderItem>,
     )
     .addOption(new Option('-d, --dest <path>', 'Output directory').default('./snapshot'))
-    .action(snapshot);
+    .action(async (opts) => {
+      await snapshot(opts);
+      process.exit(0);
+    });
 };
 
 export const addApplyCommand = (program: Command) => {
   decorateCommandWithCommonOptions(program.command('apply').description('Apply snapshots to a Directus instance'))
     .addOption(new Option('-s, --src <path>', 'Source directory').default('./snapshot'))
-    .action(apply);
+    .action(async (opts) => {
+      await apply(opts);
+      process.exit(0);
+    });
 };
 
 export const addCommands = (program: Command) => {

@@ -89,8 +89,8 @@ importers:
   lib:
     dependencies:
       '@directus/sdk':
-        specifier: ^10.3.3
-        version: 10.3.3
+        specifier: ^13.0.2
+        version: 13.0.2
       '@directuspt/lib':
         specifier: workspace:^
         version: 'link:'
@@ -264,6 +264,11 @@ packages:
       axios: 0.27.2
     transitivePeerDependencies:
       - debug
+    dev: false
+
+  /@directus/sdk@13.0.2:
+    resolution: {integrity: sha512-KECQM0w8xlgr5EklX+Jb9+dIzXyvJFjRfhiIAI7l/b0WEtVaCfvRMIrJXR3XsLeVW9u2nu+b/TffOyTMSLjm2w==}
+    engines: {node: '>=18.0.0'}
     dev: false
 
   /@directus/types@10.1.1:

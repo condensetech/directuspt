@@ -41,7 +41,7 @@ async function fetchSnapshot(
     console.log(`  [${type}] OK`);
     return [type, data];
   } catch (e) {
-    throw new CommandSectionError(`  [${type}] Snapshot operation failed`, e);
+    throw new CommandSectionError(`  [${type}] Snapshot operation failed`, e.errors?.[0] ?? e);
   }
 }
 

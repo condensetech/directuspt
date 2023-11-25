@@ -1,21 +1,30 @@
-import { Filter, FolderItem } from '@directus/sdk';
+import { createFolders, readFolders, updateFolder } from '@directus/sdk';
 import { identity, isEqual, pickBy } from 'lodash-es';
 import { BaseCommandOptions, DirectusClient } from './common';
+
+type FolderItem = Record<string, any>;
+type Filter<T> = Record<keyof T, any>;
 
 export interface FoldersSnapshotOptions extends BaseCommandOptions {
   foldersFilter?: Filter<FolderItem>;
 }
 
 export async function snapshotFolders(client: DirectusClient, opts?: FoldersSnapshotOptions): Promise<FolderItem[]> {
-  const folders = await client.folders.readByQuery({
-    limit: -1,
-    sort: ['id'],
-    filter: opts?.foldersFilter ?? {},
-  });
-  if (!folders.data) {
-    throw new Error('No response received while fetching folders!');
+  let folders: FolderItem[] = [];
+  for (let p = 1; ; p++) {
+    const response = await client.request(
+      readFolders({
+        page: p,
+        sort: ['id'],
+        filter: opts?.foldersFilter ?? {},
+      }),
+    );
+    if (response.length === 0) {
+      break;
+    }
+    folders = folders.concat(response);
   }
-  return folders.data.map((folder: FolderItem) => pickBy(folder, identity)) as FolderItem[];
+  return folders.map((folder: FolderItem) => pickBy(folder, identity)) as FolderItem[];
 }
 
 export async function applyFoldersSnapshot(client: DirectusClient, snapshot: FolderItem[]) {
@@ -64,13 +73,13 @@ async function syncItems(client: DirectusClient, items: FolderItem[], existing: 
 async function updateItems(client: DirectusClient, items: FolderItem[]): Promise<string[]> {
   return Promise.all(
     items.map(async ({ id, ...item }) => {
-      const updated = await client.folders.updateOne(id, item);
+      const updated = await client.request(updateFolder(id, item));
       return updated!.id;
     }),
   );
 }
 
 async function createItems(client: DirectusClient, items: FolderItem[]): Promise<string[]> {
-  const { data } = await client.folders.createMany(items);
+  const data = await client.request(createFolders(items));
   return data!.map((i) => i.id);
 }
