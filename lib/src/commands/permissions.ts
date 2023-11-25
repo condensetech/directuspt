@@ -1,6 +1,21 @@
-import { Filter, PermissionItem, RoleItem } from '@directus/sdk';
+import {
+  createPermission,
+  createRole,
+  deletePermission,
+  readPermissions,
+  readRoles,
+  updatePermission,
+  updateRole,
+} from '@directus/sdk';
 import { isEqual, omit, pickBy, uniq } from 'lodash-es';
 import { BaseCommandOptions, DirectusClient } from './common';
+
+interface RoleItem {
+  id: string;
+  [key: string]: any;
+}
+type PermissionItem = Record<string, any>;
+type Filter<T> = Record<keyof T, any>;
 
 export interface PermissionsSnapshotOptions extends BaseCommandOptions {
   rolesFilter?: Filter<RoleItem>;
@@ -24,11 +39,16 @@ async function fetchRemoteRolePermissions(
   opts?: FetchRemoteRolePermissionsOpts,
 ): Promise<RolePermissions> {
   const filter = roleId ? { role: { _eq: roleId } } : { role: { _null: true } };
-  const response = await client.permissions.readByQuery({ limit: -1, filter });
-  if (!response.data) {
+  const response = await client.request(
+    readPermissions({
+      limit: -1,
+      filter,
+    }),
+  );
+  if (!response) {
     throw new Error('No response received while fetching permissions!');
   }
-  return response.data.reduce((acc, { id, collection, action, fields, ...rest }) => {
+  return response.reduce((acc, { id, collection, action, fields, ...rest }) => {
     const serialized: CustomPermissionItem = {
       ...pickBy(rest, (v) => v !== undefined),
       fields: fields?.sort(),
@@ -50,17 +70,23 @@ export async function snapshotPermissions(
   client: DirectusClient,
   opts: PermissionsSnapshotOptions,
 ): Promise<CustomRoleItem[]> {
-  const result = await client.roles.readByQuery({
-    limit: -1,
-    sort: ['id'],
-    fields: ['id', 'name', 'icon', 'description', 'ip_access', 'enforce_tfa', 'admin_access', 'app_access'],
-    filter: opts.rolesFilter ?? {},
-  });
-  if (!result.data) {
-    throw new Error('No response received while fetching roles!');
+  let roles: RoleItem[] = [];
+  for (let p = 1; ; p++) {
+    const result = await client.request<RoleItem[]>(
+      readRoles({
+        page: p,
+        sort: ['id'],
+        fields: ['id', 'name', 'icon', 'description', 'ip_access', 'enforce_tfa', 'admin_access', 'app_access'],
+        filter: opts.rolesFilter ?? {},
+      }),
+    );
+    if (result.length === 0) {
+      break;
+    }
+    roles = roles.concat(result);
   }
   // add a `null` role to handle public permissions, which have no roles:
-  const roles = [...result.data, { id: null } as unknown as RoleItem];
+  roles.push({ id: null } as unknown as RoleItem);
   return Promise.all(
     roles.map(async (role: RoleItem) => {
       const permits = await fetchRemoteRolePermissions(role.id, client);
@@ -73,7 +99,14 @@ export async function snapshotPermissions(
 }
 
 export async function applyPermissionsSnapshot(client: DirectusClient, snapshot: CustomRoleItem[]) {
-  const { data: existingRoles } = await client.roles.readByQuery({ limit: -1 });
+  let existingRoles: RoleItem[] = [];
+  for (let p = 1; ; p++) {
+    const result = await client.request<RoleItem[]>(readRoles({ page: p }));
+    if (result.length === 0) {
+      break;
+    }
+    existingRoles = existingRoles.concat(result);
+  }
   for (const snapshotRole of snapshot) {
     const existingRole = snapshotRole.id ? await upsertRole(snapshotRole, existingRoles!, client) : null;
     const existingPermits = await fetchRemoteRolePermissions(existingRole?.id, client, { includeId: true });
@@ -99,7 +132,7 @@ async function upsertRole(
     return existingRole;
   }
   console.log(`  [permissions] Creating role "${snapshotRole.name}"`);
-  const newRole = await client.roles.createOne(omit(snapshotRole, 'permits'));
+  const newRole = await client.request<RoleItem>(createRole(omit(snapshotRole, 'permits')));
   return newRole!;
 }
 
@@ -113,7 +146,7 @@ async function updateRoleIfNeeded(
     console.log(`  [permissions] Skipping role update "${existingId}"`);
     return;
   }
-  await client.roles.updateOne(existingId, attributes);
+  await client.request(updateRole(existingId, attributes));
   console.log('  [permissions] Updated role "%s" with %j', existingId, attributes);
 }
 
@@ -144,10 +177,10 @@ async function syncActions({ role, collection }, existingActions = {}, snapshotA
 async function syncAction({ role, collection, action }, existing, snapshot, client: DirectusClient) {
   if (!existing) {
     console.log('  [permissions] Creating permission', role, collection, action);
-    await client.permissions.createOne({ role, collection, action, ...snapshot });
+    await client.request(createPermission({ role, collection, action, ...snapshot }));
   } else if (!snapshot) {
     console.log('  [permissions] Deleting permission', role, collection, action);
-    await client.permissions.deleteOne(existing.id);
+    await client.request(deletePermission(existing.id));
   } else {
     const attributes = diffObjects(existing, snapshot);
     if (Object.keys(attributes).length === 0) {
@@ -155,6 +188,6 @@ async function syncAction({ role, collection, action }, existing, snapshot, clie
       return;
     }
     console.log('  [permissions] Updating permission %s %s %s with %j', role, collection, action, attributes);
-    await client.permissions.updateOne(existing.id, attributes);
+    await client.request(updatePermission(existing.id, attributes));
   }
 }
