@@ -1,4 +1,7 @@
 node_modules/
 app/node_modules/
 app/dist/
+lib/node_modules/
+extension/node_modules/
+extension/dist/
 .pnpm-store/

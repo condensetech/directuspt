@@ -4,19 +4,21 @@
   "scripts": {
     "prepare": "husky install",
     "lint": "eslint .",
-    "build": "pnpm --recursive run build"
+    "build": "pnpm --recursive run build",
+    "clean": "pnpm --recursive run clean"
   },
   "engines": {
-		"node": ">=18.0.0",
-		"pnpm": "~8.6.0"
-	},
+    "node": ">=18.0.0",
+    "pnpm": "~8.6.0"
+  },
   "packageManager": "pnpm@8.6.0",
   "devDependencies": {
-    "husky": "^8.0.3",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "@typescript-eslint/eslint-plugin": "^6.2.0",
-    "@typescript-eslint/parser": "^6.2.0"
+    "husky": "^8.0.3"
   }
 }

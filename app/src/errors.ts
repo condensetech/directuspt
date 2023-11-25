@@ -1,11 +1,5 @@
 import { AxiosError, AxiosResponse } from 'axios';
-
-export class CommandSectionError extends Error {
-  constructor(message: string, readonly baseError?: Error) {
-    super(message);
-    this.name = 'CommandSectionError';
-  }
-}
+import { CommandSectionError } from '@directuspt/lib';
 
 function errorToStringMessage(error: Error): string | undefined {
   if (error instanceof CommandSectionError) {

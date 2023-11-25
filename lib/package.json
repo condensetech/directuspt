@@ -1,0 +1,22 @@
+{
+  "name": "@directuspt/lib",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Directus CLI Tools to help with snapshots and seeding operations",
+  "author": "Condense <info@condense.tech>",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@directus/sdk": "^10.3.3",
+    "@directuspt/lib": "workspace:^",
+    "axios": "^1.4.0",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "commander": "^11.1.0"
+  }
+}

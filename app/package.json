@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.7",
-    "@types/node": "^20.3.1",
     "esbuild": "^0.18.3",
     "prettier": "2.8.8",
     "rimraf": "^5.0.1",
@@ -29,8 +28,9 @@
   "dependencies": {
     "@directus/sdk": "^10.3.3",
     "@directus/types": "^10.1.1",
+    "@directuspt/lib": "workspace:^",
     "axios": "^1.4.0",
-    "commander": "^11.0.0",
+    "commander": "^11.1.0",
     "lodash-es": "^4.17.21"
   }
 }

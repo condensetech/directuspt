@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import { BaseCommandOptions, DirectusClient, ResourceType, getClient, getRequestedResourceTypes } from '../common';
 import { FoldersSnapshotOptions, snapshotFolders } from '../folders';
 import { PermissionsSnapshotOptions, snapshotPermissions } from '../permissions';
@@ -41,7 +41,7 @@ async function fetchSnapshot(
     console.log(`  [${type}] OK`);
     return [type, data];
   } catch (e) {
-    throw new CommandSectionError(`  [${name}] Snapshot operation failed`, e);
+    throw new CommandSectionError(`  [${type}] Snapshot operation failed`, e);
   }
 }
 

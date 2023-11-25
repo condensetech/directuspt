@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  directus:
+    image: directus/directus:10.8.2
+    ports:
+      - 8055:8055
+    volumes:
+      - ./:/directus/extensions/directus-extension-schema-exporter
+    environment:
+      KEY: "replace-with-random-value"
+      SECRET: "replace-with-random-value"
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "d1r3ctu5"
+      DB_CLIENT: "sqlite3"
+      DB_FILENAME: "/directus/database/data.db"
+      WEBSOCKETS_ENABLED: true
+      EXTENSIONS_AUTO_RELOAD: 'true'
+      CHOKIDAR_USEPOLLING: true  # bound to extensions auto reload
+      CHOKIDAR_INTERVAL: 2000 # default is 300 milliseconds
