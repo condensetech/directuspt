@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { sortBy } from 'lodash-es';
 import { DirectusClient } from './common';
+import { createTranslation, readTranslations, updateTranslation } from '@directus/sdk';
 
 type CustomTranslationItem = Omit<TranslationItem, 'id'>;
 type TranslationItem = {
@@ -25,49 +25,27 @@ export async function applyTranslationsSnapshot(client: DirectusClient, snapshot
 
       if (hasNewValue) {
         console.log('  [translations] Updating translation "%s"', snapshotTuple);
-        await updateTranslation(client, matchedItem.id, snapshotItem.value);
+        await client.request(updateTranslation(matchedItem.id, { value: snapshotItem.value }));
       } else {
         console.debug('  [translations] Skipping translation "%s"', snapshotTuple);
       }
     } else {
       console.log('  [translations] Creating translation "%s"', snapshotTuple);
-      await createTranslation(client, snapshotItem);
+      await client.request(createTranslation(snapshotItem));
     }
   }
 }
 
 async function fetchTranslations(client: DirectusClient): Promise<TranslationItem[]> {
-  const {
-    data: { data },
-  } = await axios.get<{ data: TranslationItem[] }>(`${client.url}/translations?limit=-1`, {
-    headers: {
-      Authorization: `Bearer ${await client.auth.token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return data;
-}
-
-async function createTranslation(client: DirectusClient, item: CustomTranslationItem) {
-  await axios.post(`${client.url}/translations`, item, {
-    headers: {
-      Authorization: `Bearer ${await client.auth.token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-}
-
-async function updateTranslation(client: DirectusClient, id: string, value: string) {
-  await axios.patch(
-    `${client.url}/translations/${id}`,
-    { value },
-    {
-      headers: {
-        Authorization: `Bearer ${await client.auth.token}`,
-        'Content-Type': 'application/json',
-      },
-    },
-  );
+  let translations: TranslationItem[] = [];
+  for (let p = 1; ; p++) {
+    const data = await client.request<TranslationItem[]>(readTranslations({ page: p }));
+    if (data.length === 0) {
+      break;
+    }
+    translations = translations.concat(data);
+  }
+  return translations;
 }
 
 function translationTuple(t: TranslationItem | CustomTranslationItem): string {
