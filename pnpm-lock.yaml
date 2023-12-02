@@ -91,6 +91,9 @@ importers:
       '@directus/sdk':
         specifier: ^13.0.2
         version: 13.0.2
+      '@directus/types':
+        specifier: ^10.1.1
+        version: 10.1.1
       '@directuspt/lib':
         specifier: workspace:^
         version: 'link:'

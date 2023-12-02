@@ -12,6 +12,7 @@
   "keywords": [],
   "dependencies": {
     "@directus/sdk": "^13.0.2",
+    "@directus/types": "^10.1.1",
     "@directuspt/lib": "workspace:^",
     "axios": "^1.4.0",
     "lodash-es": "^4.17.21"

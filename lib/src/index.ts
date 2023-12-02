@@ -1,5 +1,5 @@
 import { Command, InvalidArgumentError, Option } from 'commander';
-import type { Filter, RoleItem, FolderItem } from '@directus/sdk';
+import { Filter } from '@directus/types';
 import { snapshot } from './commands/snapshot';
 import { apply } from './commands/apply';
 export * from './errors';
@@ -20,7 +20,7 @@ const parseResourceTypes = (value: string): ResourceType[] =>
     return value;
   });
 
-const parseFilter = <T>(value): Filter<T> => {
+const parseFilter = (value: any): Filter => {
   let parsed;
   try {
     parsed = JSON.parse(value);
@@ -31,7 +31,7 @@ const parseFilter = <T>(value): Filter<T> => {
   if (typeof parsed !== 'object') {
     throw new InvalidArgumentError('Argument should be an object or an array');
   }
-  return parsed as Filter<T>;
+  return parsed as Filter;
 };
 
 const decorateCommandWithCommonOptions = (command: Command): Command =>
@@ -55,12 +55,12 @@ export const addSnapshotCommand = (program: Command) => {
     .option(
       '--roles-filter <filter>',
       'Additional filter expressed in directus JSON format to apply on permission roles',
-      parseFilter<RoleItem>,
+      parseFilter,
     )
     .option(
       '--folders-filter <filter>',
       'Additional filter expressed in directus JSON format to apply on folders',
-      parseFilter<FolderItem>,
+      parseFilter,
     )
     .addOption(new Option('-d, --dest <path>', 'Output directory').default('./snapshot'))
     .action(async (opts) => {
