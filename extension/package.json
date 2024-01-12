@@ -4,7 +4,7 @@
 	"author": "Condense <info@condense.tech>",
 	"license": "MIT",
 	"icon": "extension",
-	"version": "1.0.0",
+	"version": "0.0.5",
 	"keywords": [
 		"directus",
 		"directus-extension",
