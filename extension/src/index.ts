@@ -1,5 +1,5 @@
 import { defineHook } from '@directus/extensions-sdk';
-import { addCommands } from '@directuspt/lib';
+import { addCommands } from 'directuspt-lib';
 import type { Command } from 'commander';
 
 export default defineHook(({ init }) => {

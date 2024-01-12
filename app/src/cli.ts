@@ -1,6 +1,6 @@
 import { program } from 'commander';
 import { printError } from './errors';
-import { addCommands } from '@directuspt/lib';
+import { addCommands } from 'directuspt-lib';
 
 function getPackageVersionSync() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires

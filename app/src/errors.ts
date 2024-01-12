@@ -1,5 +1,5 @@
 import { AxiosError, AxiosResponse } from 'axios';
-import { CommandSectionError } from '@directuspt/lib';
+import { CommandSectionError } from 'directuspt-lib';
 
 function errorToStringMessage(error: Error): string | undefined {
   if (error instanceof CommandSectionError) {

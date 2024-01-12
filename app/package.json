@@ -1,6 +1,6 @@
 {
   "name": "directuspt",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Directus CLI Tools to help with snapshots and seeding operations",
   "author": "Condense <info@condense.tech>",
   "license": "MIT",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@directus/sdk": "^10.3.3",
     "@directus/types": "^10.1.1",
-    "@directuspt/lib": "workspace:^",
+    "directuspt-lib": "workspace:^",
     "axios": "^1.4.0",
     "commander": "^11.1.0",
     "lodash-es": "^4.17.21"

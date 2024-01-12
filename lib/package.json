@@ -1,23 +1,27 @@
 {
-  "name": "@directuspt/lib",
-  "private": true,
-  "version": "1.0.0",
+  "name": "directuspt-lib",
+  "version": "0.1.0",
   "description": "Directus CLI Tools to help with snapshots and seeding operations",
   "author": "Condense <info@condense.tech>",
   "license": "MIT",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "sideEffects": false,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf dist",
+    "build": "npm run clean && esbuild ./src/index.ts --bundle --platform=node --target=node14 --outdir=dist/"
   },
   "keywords": [],
   "dependencies": {
     "@directus/sdk": "^13.0.2",
     "@directus/types": "^10.1.1",
-    "@directuspt/lib": "workspace:^",
     "axios": "^1.4.0",
+    "directuspt-lib": "workspace:^",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "esbuild": "^0.18.3",
+    "rimraf": "^5.0.1"
   }
 }
